@@ -13,7 +13,7 @@
 using namespace std;
 
 Restaurant::Restaurant(string name, char location, string open_time, string close_time, map<string, int> foodmenu)
-    : name(name), location(location), open_time(open_time), close_time(close_time),foodmenu(foodmenu) {}
+    : name(name), location(location), open_time(open_time), close_time(close_time), foodmenu(foodmenu) {}
 
 vector<string> food_type_list = LoadData("food_data.txt");
 
@@ -28,15 +28,12 @@ void Restaurant::Print() const
     switch (location)
     {
     case 'a':
-        cout << "기숙사";
+        cout << "정문";
         break;
     case 'b':
         cout << "후문";
         break;
     case 'c':
-        cout << "공대쪽문";
-        break;
-    case 'd':
         cout << "상대";
         break;
     default:
@@ -83,11 +80,13 @@ vector<Restaurant> LoadRestaurantData(const string &filename)
                     throw runtime_error("위치 데이터가 누락되었습니다.");
                 char location = location_str[0];
 
-                if (!getline(ss, hours_str, '/')) throw runtime_error("영업시간 데이터가 누락되었습니다.");
+                if (!getline(ss, hours_str, '/'))
+                    throw runtime_error("영업시간 데이터가 누락되었습니다.");
                 int bar_index = hours_str.find('-');
-                if (bar_index == string::npos) throw runtime_error("잘못된 영업시간 형식: " + hours_str);
-                string open_time = hours_str.substr(0, bar_index);  // 시작 시간
-                string close_time = hours_str.substr(bar_index + 1);  // 종료 시간
+                if (bar_index == string::npos)
+                    throw runtime_error("잘못된 영업시간 형식: " + hours_str);
+                string open_time = hours_str.substr(0, bar_index);   // 시작 시간
+                string close_time = hours_str.substr(bar_index + 1); // 종료 시간
 
                 // 3. 음식 메뉴
                 while (getline(ss, menu_item, '/'))
@@ -164,7 +163,7 @@ int SelectMenu()
     {
         cin.clear();
         cin.ignore(1000, '\n');
-        cout << "잘못된 입력입니다. 정수를 입력해주세요." << endl;
+        cout << "잘못된 입력입니다. 정수를 입력해주세요: ";
     }
     return userSelectCategory;
 }
@@ -348,7 +347,6 @@ vector<string> LoadData(const string &filename)
     return food_data;
 }
 
-
 void InputUserPreferences(vector<User> &user_data, const vector<string> &food_type_list)
 {
     Line10Show(food_type_list);
@@ -359,33 +357,36 @@ void InputUserPreferences(vector<User> &user_data, const vector<string> &food_ty
         cout << "선호 음식을 입력해주세요(입력을 다 했다면 -1을 입력): ";
         cin >> user_choice;
 
-        if (user_choice == "-1"){
-            if(!user_data.empty()){
-                break;
-            }
-            else{
-                cout << "음식을 하나 이상 입력해주세요. ^^" << endl;
-            }
-        }
-        else{
-            
-
-        if (FindE(food_type_list, user_choice))
+        if (user_choice == "-1")
         {
-            if (FindE(user_data, user_choice))
-            { // 중복 확인
-                cout << "이미 선호 음식에 추가된 항목입니다. 다시 입력해주세요." << std::endl;
+            if (!user_data.empty())
+            {
+                break;
             }
             else
             {
-                cout << user_choice << "을/를 선호 음식에 추가합니다." << std::endl;
-                user_data.push_back(User(user_choice, time(nullptr) - (3 * 24 * 60 * 60)));
+                cout << "음식을 하나 이상 입력해주세요. ^^" << endl;
             }
         }
         else
         {
-            cout << "리스트에 있는 음식만 입력해주세요." << std::endl;
-        }
+
+            if (FindE(food_type_list, user_choice))
+            {
+                if (FindE(user_data, user_choice))
+                { // 중복 확인
+                    cout << "이미 선호 음식에 추가된 항목입니다. 다시 입력해주세요." << std::endl;
+                }
+                else
+                {
+                    cout << user_choice << "을/를 선호 음식에 추가합니다." << std::endl;
+                    user_data.push_back(User(user_choice, time(nullptr) - (3 * 24 * 60 * 60)));
+                }
+            }
+            else
+            {
+                cout << "리스트에 있는 음식만 입력해주세요." << std::endl;
+            }
         }
     }
 }
@@ -394,25 +395,25 @@ void RecommendRestaurant(const vector<Restaurant> &restaurants, const string &se
 {
 
     cout << "식당 추천" << endl;
-    cout << "----------------------------------------------------------------------" << endl;
+    cout << "---------------------------------------------------------------------------------------" << endl;
 
     // 사용자 위치 입력
     char user_location;
-    cout << "현재 위치를 입력해주세요 (a: 기숙사, b: 후문, c: 공대쪽문, d: 상대): ";
+    cout << "현재 위치를 입력해주세요 (a: 정문, b: 후문, c: 상대): ";
     while (true)
     {
         cin >> user_location;
-        if (user_location == 'a' || user_location == 'b' || user_location == 'c' || user_location == 'd')
+        if (user_location == 'a' || user_location == 'b' || user_location == 'c')
         {
             break; // 올바른 입력이면 루프 종료
         }
         else
         {
-            cout << "잘못된 입력입니다. 다시 입력해주세요 (a, b, c, d): ";
+            cout << "잘못된 입력입니다. 다시 입력해주세요 (a, b, c): ";
         }
     }
 
-    cout << "----------------------------------------------------------------------" << endl;
+    cout << "---------------------------------------------------------------------------------------" << endl;
 
     // 사용자의 위치와 음식에 맞는 식당 필터링
     vector<Restaurant> filtered_restaurants;
@@ -435,8 +436,9 @@ void RecommendRestaurant(const vector<Restaurant> &restaurants, const string &se
         const auto &recommended_restaurant = filtered_restaurants[random_index];
 
         recommended_restaurant.Print();
-        cout << "----------------------------------------------------------------------" << endl;
+        cout << "---------------------------------------------------------------------------------------" << endl;
         cout << "이 식당을 선택하시겠습니까? (0: 선택, 1: 다시 추천): ";
+
         int choice = SelectMenu();
 
         if (choice == 0)
@@ -450,7 +452,7 @@ void RecommendRestaurant(const vector<Restaurant> &restaurants, const string &se
         }
         else
         {
-            cout << "잘못된 입력입니다. 다시 시도해주세요." << endl;
+            cout << "잘못된 입력입니다. 다시 시도해주세요.";
         }
     }
 
@@ -468,25 +470,33 @@ string RecommendFood(vector<string> &food_list)
     {
         int random_index = rand() % food_list.size();
         string recommended_food = food_list[random_index];
-        cout << "----------------------------------------------------------------------" << endl;
+        cout << "---------------------------------------------------------------------------------------" << endl;
         cout << "추천 메뉴: " << recommended_food << endl;
         cout << "이 메뉴를 선택하시겠습니까? (0: 선택, 1: 다시 추천): ";
-        int choice = SelectMenu(); // 안전 입력 처리
+        int choice;
+        while (true)
+        {
+            choice = SelectMenu(); // 안전 입력 처리
+            if (choice == 0)
+            {
 
-        if (choice == 0)
-        {
-            cout << recommended_food << "을(를) 선택하셨습니다!" << endl;
-            selected_food = recommended_food;
-            break; // 선택 완료 후 종료
+                cout << recommended_food << "을(를) 선택하셨습니다!" << endl;
+                selected_food = recommended_food;
+                break; // 선택 완료 후 종료
+            }
+            else if (choice == 1)
+            {
+                food_list.erase(food_list.begin() + random_index); // 이미 추천된 메뉴 제외
+                break;
+            }
+            else
+            {
+                cout << "잘못된 입력입니다. 0이나 1을 입력해주세요: ";
+            }
         }
-        else if (choice == 1)
-        {
-            food_list.erase(food_list.begin() + random_index); // 이미 추천된 메뉴 제외
-        }
-        else
-        {
-            cout << "잘못된 입력입니다. 다시 시도해주세요." << endl;
-        }
+
+        if (choice == 0) //입력문 나감
+            break;
     }
 
     if (food_list.empty())
